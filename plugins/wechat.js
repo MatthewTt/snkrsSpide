@@ -7,12 +7,12 @@ const redis = require('../utils/redis')
 const TwoHours = 60 * 60 * 2
 
 class WechatMessage {
-  wechatApi = `https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${config.companyId}&corpsecret=${config.companySecret}`
+  constructor() {
+    // this.accessToken = ''
+    this.wechatApi = `https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${ config.companyId }&corpsecret=${ config.companySecret }`
 
-  /*constructor() {
-    this.accessToken = ''
-  }*/
-  async fetchAccessToken() {
+  }
+  async fetchAccessToken () {
     const res = await request.post(this.wechatApi)
     if (res.errcode === 0) {
       // this.accessToken = res.access_token
@@ -22,13 +22,13 @@ class WechatMessage {
   }
 
   async sendMessage (msgType, data) {
-    const messageApi = `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${await redis.getById('accessToken')}`
+    const messageApi = `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ await redis.getById('accessToken') }`
     console.log(msgType, data)
     const result = request.post(messageApi, {
       ...data,
       touser: data.touser || '@all',
       msgtype: msgType,
-      agentid: config.agentId,
+      agentid: config.agentId
     }).then(data => {
       return data
     }).catch(e => {
@@ -37,16 +37,16 @@ class WechatMessage {
     return result
   }
 
-  async sendText(content, touser) {
+  async sendText (content, touser) {
     const res = this.sendMessage('text', {
-        text: {content},
-      touser
+        text: { content },
+        touser
       }
     )
     return res
   }
 
-  sendMarkdown(content, toUser) {
+  sendMarkdown (content, toUser) {
     return this.sendMessage('markdown', {
       markdown: {
         content,
@@ -55,15 +55,15 @@ class WechatMessage {
     })
   }
 
-  sendNews(data) {
+  sendNews (data) {
     return this.sendMessage('news', {
       ...data
     })
   }
 
-  async uploadFile(type, data) {
+  async uploadFile (type, data) {
     const token = await redis.getById('accessToken')
-    const uploadUrl = `https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`
+    const uploadUrl = `https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=${ token }&type=${ type }`
     const file = new FormData()
     file.append('media', data)
     return new Promise(async (resolve, reject) => {
